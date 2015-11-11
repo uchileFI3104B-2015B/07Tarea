@@ -1,0 +1,35 @@
+# primera iteracion (1)
+xr-xp = (vp+cq)*(tr-tp)
+xr-xq = (vq-cq)*(tr-tq)
+
+cp*(rhor - rhop)+(vr-vp)*rhop = 0
+cq*(rhor - rhoq)-(vr-vq)*rhoq = 0
+
+
+# segunda iteracion o mas (2)
+
+xr_n - xp = 1/2*(vp + vr + cp + cr)*(tr_n - tp)
+xr_n - xq = 1/2*(vq + vr - cq - cr)*(tr_n - tq)
+
+(cp + cr)*(rhor_n - rhop) = -(vr_n - vp)(rhop + rhor)
+(cq + cr)*(rhor_n - rhoq) = (vr_n - vq)(rhoq + rhor)
+
+# despejando de primera (1)
+
+xr = (xp*(cq - vq) + (tq - tp)*(vp*cq + cq**2 - vq*cq - vp*vq) + (cq + vp)*xq)/(vp + 2*cq - vq)
+tr = (-xp + vp*(tp - tq) + cq*(tp + tq) + xq)/(vp + 2*cq - vq)
+
+# despejando de segunda (1)
+
+rhor = (rhop*rhoq*(cp+vp+cq-vq))/(rhop*cq +rhoq*cp)
+vr = (rhop*cq*(cp+vp)+cp*rhoq*(vq-cq))/(rhop*cq +rhoq*cp)
+
+# despejando de primera (2)
+
+xr_n = (0.5*(1/(vp + cp + 2*cr -vq + cq)))*((tp + tq)*(vp*vr - vp*cr + vr**2 + vr*cp - cp*cr - cr**2) + 2*xp*(-vr + cr - vq + cq) + (tp*(vq - cq) + 2*xq + vq*tq - cq*tq)*(vp + vr + cp +cr))
+tr_n = (1/(vp + cp + 2*cr -vq + cq))*(-2*xp + tp*(vp + vr + cp + cr) + tq*(vr - cr + vq - cq) + 2*xq)
+
+# despejando de segunda (2)
+
+rhor_n = (-1.0*(rhop + rhor)*(vq*(rhoq + rhor) - rhoq*(cq + cr)) + (rhoq + rhor)*(-rhop*(cp + cr) - vp*(rhop + rhor)))/((cq + cr)*(rhop + rhor) + (cp + cr)*(rhoq + rhor))
+vr_n = ((cp + cr)/(rhop+rhor))*rhor_n + (rhop*(cp + cr) + vp*(rhop + rhor))/(rhop + rhor)
