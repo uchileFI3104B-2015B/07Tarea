@@ -166,7 +166,7 @@ class Fluido(object):
                 P = (self.x[i-1], self.t[i-1], self.v[i-1], self.d[i-1],
                      self.c[i-1])
                 Q = (self.x[i], self.t[i], self.v[i], self.d[i], self.c[i])
-                R = self.paso_principalp(P, Q, ver_convergencia)
+                R = self.paso_principal(P, Q, ver_convergencia)
                 if R[0] > 1 or R[0] < 0:
                     print "x fuera de rango (paso impar)", i
                     print "P =", P
@@ -211,18 +211,18 @@ class Fluido(object):
 
 if __name__ == '__main__':
     F = Fluido()
-    E_actual = F.estado_actual
+    E_actual = F.estado_actual()
     Datos = []
     Datos.append(E_actual)
     t_actual = 0
     contador = 0
     while t_actual <= 1.2:
         F.avance_t(True)
-        E_actual = F.estado_actual
+        E_actual = F.estado_actual()
         t_actual = E_actual[1][5000]
         contador += 1
         if contador == 100:
             print "tiempo actual en el centro del intervalo (0,1)", t_actual
             print "Numero de posiciones", F.N
-            Datos.append[E_actual]
+            Datos.append(E_actual)
     np.save('Datos.npy', Datos)
