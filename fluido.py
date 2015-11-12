@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
 """
 Este script define la clase Fluido, y un #Main que realiza la iteración para
 crear los datos requeridos
@@ -208,3 +207,22 @@ class Fluido(object):
             estado[3] = self.d[0:(self.N - 1)].copy()
         return estado
 
+#Main
+
+if __name__ == '__main__':
+    F = Fluido()
+    E_actual = F.estado_actual
+    Datos = []
+    Datos.append(E_actual)
+    t_actual = 0
+    contador = 0
+    while t_actual <= 1.2:
+        F.avance_t(True)
+        E_actual = F.estado_actual
+        t_actual = E_actual[1][5000]
+        contador += 1
+        if contador == 100:
+            print "tiempo actual en el centro del intervalo (0,1)", t_actual
+            print "Numero de posiciones", F.N
+            Datos.append[E_actual]
+    np.save('Datos.npy', Datos)
