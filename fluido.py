@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Este script define la clase Fluido, y un #Main que realiza la iteración para
 crear los datos requeridos
@@ -28,7 +29,7 @@ class Fluido(object):
         self.N = 10001
     
     def paso_izquierdo(self, Q, ver_convergencia):
-         '''
+        '''
         Da un paso hacia el borde izquierdo (x=0)
         '''
         xQ, tQ, vQ, dQ, cQ = Q
@@ -39,7 +40,6 @@ class Fluido(object):
         cR = np.sqrt(4*(5.0/3.0)*(dR**(2.0/3.0)))
         if not ver_convergencia:
             return (xR, tR, vR, dR, cR)
-        # Iterarcion hasta converger, con un maximo de 1000
         for cnt in range(1000):
             tRn = 2.0*(xR-xQ)/(vQ+vR-cQ-cR) + tQ
             dRn = (vR-vQ)*(dQ+dR)/(cQ+cR) + dQ
@@ -63,7 +63,6 @@ class Fluido(object):
         cR = np.sqrt((5.0/3.0)*(dR**(2.0/3.0)))
         if not ver_convergencia:
             return (xR, tR, vR, dR, cR)
-        # Iterarcion hasta converger, con un maximo de 1000
         for cnt in range(1000):
             tRn = 2.0*(xR-xP)/(vP+vR+cP+cR) + tP
             dRn = -(vR-vP)*(dP+dR)/(cP+cR) + dP
@@ -77,7 +76,7 @@ class Fluido(object):
         
     def paso_principal(self, P, Q, ver_convergencia):
         '''
-        Da un paso en el interior del intervalo
+        Da un paso en el interior del intervalo.
         '''
         xQ, tQ, vQ, dQ, cQ = Q
         xP, tP, vP, dP, cP = P
@@ -96,7 +95,6 @@ class Fluido(object):
             if xR < 0:
                 R = self.paso_izquierdo(Q, ver_convergencia)
             return R
-        # Iterarcion hasta converger, con un maximo de 1000
         for cnt in range(1000):
             tRn = ((xQ - ((vQ+vR)/2.0 - (cQ+cR)/2.0)*tQ - xP +
                     ((vP+vR)/2.0 + (cP+cR)/2.0)*tP)/(((vP+vR)+(cP+cR)+(cQ+cR) -
@@ -122,4 +120,91 @@ class Fluido(object):
             R = self.paso_izquierdo(Q, ver_convergencia)
         return R
         
-    
+    def avance_t(self, ver_convergencia):
+        '''
+        Avanza la curva con los datos del fluido en un paso temporal,
+        siguiendo las diferencias entre pasos pares e impares.
+        '''
+        if self.paso_par:
+            D = {}
+            L = []
+            for i in range(self.N - 1):
+                P = (self.x[i], self.t[i], self.v[i], self.d[i], self.c[i])
+                Q = (self.x[i+1], self.t[i+1], self.v[i+1], self.d[i+1],
+                     self.c[i+1])
+                R = self.paso_principal(P, Q, ver_convergencia)
+                if R[0] > 1 or R[0] < 0:
+                    print "x fuera de rango (paso par)", i
+                    print "P =", P
+                    print "Q =", Q
+                    print "R =", R
+                if R[0] in D:
+                    continue
+                D[R[0]] = R
+                bisect.insort(L, R[0])
+            self.N = len(L) + 1
+            for i in range(self.N - 1): # Ordenar los puntos
+                self.x[i] = L[i]
+                self.t[i] = D[L[i]][1]
+                self.v[i] = D[L[i]][2]
+                self.d[i] = D[L[i]][3]
+                self.c[i] = D[L[i]][4]
+            self.paso_par = False
+        else:
+            # Borde derecho
+            P = (self.x[self.N - 2], self.t[self.N - 2], self.v[self.N - 2],
+                 self.d[self.N - 2], self.c[self.N - 2])
+            R = self.paso_derecho(P, ver_convergencia)
+            self.x[self.N - 1] = R[0]
+            self.t[self.N - 1] = R[1]
+            self.v[self.N - 1] = R[2]
+            self.d[self.N - 1] = R[3]
+            self.c[self.N - 1] = R[4]
+            # Interior
+            D = {}
+            L = []
+            for i in range(self.N - 2, 0, -1):
+                P = (self.x[i-1], self.t[i-1], self.v[i-1], self.d[i-1],
+                     self.c[i-1])
+                Q = (self.x[i], self.t[i], self.v[i], self.d[i], self.c[i])
+                R = self.paso_principalp(P, Q, ver_convergencia)
+                if R[0] > 1 or R[0] < 0:
+                    print "x fuera de rango (paso impar)", i
+                    print "P =", P
+                    print "Q =", Q
+                    print "R =", R
+                if R[0] in D or R[0] == 1.0 or R[0] == 0.0:
+                    continue
+                D[R[0]] = R
+                bisect.insort(L, R[0])
+            self.N = len(L) + 2
+            for i in range(self.N - 2, 0, -1): #Ordenar los puntos
+                self.x[i] = L[i-1]
+                self.t[i] = D[L[i-1]][1]
+                self.v[i] = D[L[i-1]][2]
+                self.d[i] = D[L[i-1]][3]
+                self.c[i] = D[L[i-1]][4]
+            # Borde izquierdo
+            Q = (self.x[0], self.t[0], self.v[0], self.d[0], self.c[0])
+            R = self.paso_izquierdo(Q, ver_convergencia)
+            self.x[0] = R[0]
+            self.t[0] = R[1]
+            self.v[0] = R[2]
+            self.d[0] = R[3]
+            self.c[0] = R[4]
+            self.paso_par = True
+            
+    def estado_actual(self):
+        estado = [0, 0, 0, 0]
+        if self.paso_par:
+            estado[0] = self.x[0:self.N].copy()
+            estado[1] = self.t[0:self.N].copy()
+            estado[2] = self.v[0:self.N].copy()
+            estado[3] = self.d[0:self.N].copy()
+        else:
+            estado[0] = self.x[0:(self.N - 1)].copy()
+            estado[1] = self.t[0:(self.N - 1)].copy()
+            estado[2] = self.v[0:(self.N - 1)].copy()
+            estado[3] = self.d[0:(self.N - 1)].copy()
+        return estado
+
